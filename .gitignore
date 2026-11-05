@@ -1,0 +1,6 @@
+.idea
+.vscode
+.VSCodeCounter
+log
+*.dSYM
+akinator
