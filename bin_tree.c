@@ -1,10 +1,11 @@
 #include "bin_tree.h"
 #include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include "log.h"
 #include "config.h"
+#include "tree_io.h"
 
-static void node_print(Node *node);
 static void node_destroy(Node **node);
 static void insert_node_in_sorted_order(BinTree *tree, Node *new_node);
 
@@ -42,15 +43,16 @@ void tree_print(BinTree *tree)
 {
     assert(tree);
 
-    if (tree->root)
+    TreeIOError error = write_tree_in_file(tree, stdout, INORDER);
+    if (error == TREE_IO_EMPTY_TREE)
     {
-        node_print(tree->root);
-        printf("\n");
+        printf("Tree dump: tree is empty");
     }
-    else
+    else if (error != TREE_IO_OK)
     {
-        printf("Tree dump: tree is empty\n");
+        LOG("ERROR: cant print tree: %s", tree_io_get_str_error(error));
     }
+    printf("\n");
 }
 
 const char *tree_get_str_error(BinTreeError error)
@@ -92,21 +94,4 @@ static void node_destroy(Node **node)
         node_destroy(&(*node)->right);
 
     free_ptr(*node);
-}
-
-static void node_print(Node *node)
-{
-    assert(node);
-
-    printf("(");
-
-    if (node->left != NULL)
-        node_print(node->left);
-
-    printf(TREE_EL_SPECIFICATOR, node->data);
-
-    if (node->right != NULL)
-        node_print(node->right);
-
-    printf(")");
 }
