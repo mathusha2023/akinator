@@ -32,8 +32,10 @@ typedef struct BinTree
 
 BinTreeError tree_insert_node(BinTree *tree, tree_el_t value);
 void tree_destroy(BinTree *tree);
+void node_destroy(Node **node);
 
 void tree_print(BinTree *tree);
+void tree_dump(BinTree *tree);
 const char *tree_get_str_error(BinTreeError error);
 
 #endif // BIN_TREE_H

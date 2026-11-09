@@ -12,6 +12,7 @@ int main(void)
     tree_el_t x = 0;
     size_t n = 0;
 
+    printf("Enter your numbers count: ");
     int res = scanf("%zu", &n);
     if (res <= 0)
     {
@@ -27,7 +28,6 @@ int main(void)
             LOG("ERROR WHILE READING number");
             return 1;
         }
-
         error = tree_insert_node(&tree, x);
         if (error != TREE_OK)
         {
