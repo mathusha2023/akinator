@@ -16,6 +16,7 @@ void restart_log()
     assert(zalupasanyfile);
     setbuf(zalupasanyfile, NULL);
 
+    fprintf(zalupasanyfile, "<!DOCTYPE html>\n<html lang = \"ru\">\n<head>\n  <meta charset = \"UTF-8\">\n  <title>%s</title>\n</head>", PROGRAM_NAME);
     fprintf(zalupasanyfile, "<pre>\n");
     fprintf(zalupasanyfile, "<h1>############# &lt;%s&gt; #############\n</h1>", PROGRAM_NAME);
     fprintf(zalupasanyfile, "Compiled at: %s %s\n\n", __DATE__, __TIME__);

@@ -9,35 +9,27 @@ int main(void)
     BinTree tree = {};
     BinTreeError error = TREE_OK;
 
-    tree_el_t x = 0;
-    size_t n = 0;
-
-    printf("Enter your numbers count: ");
-    int res = scanf("%zu", &n);
-    if (res <= 0)
+    error = tree_insert_node(&tree, tree.root, ROOT_CHILD, "Никто");
+    if (error != TREE_OK)
     {
-        LOG("ERROR WHILE READING n");
-        return 1;
+        LOG("ERRORR: %s", tree_get_str_error(error));
+        return error;
     }
 
-    printf("Enter %zu numbers to sort: ", n);
-    for (size_t i = 0; i < n; i++)
+    error = tree_insert_node(&tree, tree.root, LEFT_CHILD, "Мама");
+    if (error != TREE_OK)
     {
-        res = scanf(TREE_EL_SPECIFICATOR, &x);
-        if (res <= 0)
-        {
-            LOG("ERROR WHILE READING number");
-            return 1;
-        }
-        error = tree_insert_node(&tree, x);
-        if (error != TREE_OK)
-        {
-            LOG("ERROR WHILE INSERTING VALUE TO TREE: %s", tree_get_str_error(error));
-            return error;
-        }
+        LOG("ERRORR: %s", tree_get_str_error(error));
+        return error;
     }
 
-    printf("\n");
+    error = tree_insert_node(&tree, tree.root, RIGHT_CHILD, "Папа");
+    if (error != TREE_OK)
+    {
+        LOG("ERRORR: %s", tree_get_str_error(error));
+        return error;
+    }
+
     tree_print(&tree);
 
     tree_destroy(&tree);

@@ -8,32 +8,77 @@
 #include "tree_io.h"
 #include "graphviz.h"
 
-static void insert_node_in_sorted_order(BinTree *tree, Node *new_node);
+static BinTreeError insert_node_to_pointer(Node **node_ptr, tree_el_t value);
 
-BinTreeError tree_insert_node(BinTree *tree, tree_el_t value)
+// если дерево пусто, то tree->root = NULL; node = NULL; child_type = ROOT_CHILD
+// в таком случае вставка элемента в корень пройдет успешно
+// если же хоть одно из этих условий не выполняется при наличии остальных, то это ошибка
+// короче говоря, для корректной вставки или должны быть выполнены все приведенные условия
+// или ни одно из них
+BinTreeError tree_insert_node(BinTree *tree, Node *node, ChildType child_type, tree_el_t value)
 {
     assert(tree);
 
-    FLOG("<h1>INSERT NODE WITH VALUE " TREE_EL_SPECIFICATOR "</h1>", value);
-    tree_dump(tree);
+    int cond1 = !tree->root, cond2 = !node, cond3 = child_type == ROOT_CHILD;
 
-    Node *new_node = (Node *)calloc(1, sizeof(Node));
-    if (!new_node)
+    BinTreeError error = TREE_OK;
+
+    if (cond1 && cond2 && cond3)
     {
-        LOG("Error while allocating memory for tree [%p] node with value " TREE_EL_SPECIFICATOR,
-            tree, value);
-        return TREE_MEMORY_ERROR;
-    }
-    new_node->data = value;
+        FLOG("<h1>Inserting node with value \"" TREE_EL_SPECIFICATOR "\" to the tree [%p] root</h1>",
+             value, tree);
 
-    insert_node_in_sorted_order(tree, new_node);
+        error = insert_node_to_pointer(&tree->root, value);
+    }
+
+    else if (!(cond1 || cond2 || cond3))
+    {
+        FLOG("<h1>Inserting node with value \"" TREE_EL_SPECIFICATOR
+             "\" to the tree [%p] as node with value \"" TREE_EL_SPECIFICATOR "\" %s</h1>",
+             value, tree, node->data, tree_get_str_child_type(child_type));
+
+        switch (child_type)
+        {
+        case LEFT_CHILD:
+            error = insert_node_to_pointer(&node->left, value);
+            break;
+        case RIGHT_CHILD:
+            error = insert_node_to_pointer(&node->right, value);
+            break;
+        case ROOT_CHILD:
+        default:
+            FLOG("ERROR: incorrect child type!!!");
+            return TREE_INCORRECT_CHILD_TYPE;
+        }
+    }
+
+    else
+    {
+        FLOG("Error: incorrect arguments in function tree_insert_node() call. "
+             "Please, write comments in code and NE EBITE MY BRAINNNN");
+        error = TREE_INCORRECT_INSERT_ARGUMENTS;
+    }
+
+    if (error != TREE_OK)
+    {
+        FLOG("Error while inserting node: %s", tree_get_str_error(error));
+        return error;
+    }
 
     tree->n_nodes++;
 
-    FLOG("INSERT NODE WITH VALUE " TREE_EL_SPECIFICATOR " successful", value);
+    if (!(cond1 || cond2 || cond3))
+        FLOG("Successful insert node with value \"" TREE_EL_SPECIFICATOR "\" to the tree [%p] root",
+             value, tree);
+
+    else if (!(cond1 || cond2 || cond3))
+        FLOG("<h1>Successful insert node with value \"" TREE_EL_SPECIFICATOR
+             "\" to the tree [%p] as node with value \"" TREE_EL_SPECIFICATOR "\" %s</h1>",
+             value, tree, node->data, tree_get_str_child_type(child_type));
+
     tree_dump(tree);
 
-    return TREE_OK;
+    return error;
 }
 
 void tree_destroy(BinTree *tree)
@@ -108,8 +153,8 @@ void tree_dump(BinTree *tree)
         return;
     }
 
-    // в дебаг моде
-    if (write_graph(tree, filename, 0))
+    // в претти моде (чтобы были видны ДА / НЕТ)
+    if (write_graph(tree, filename, 1))
     {
         FLOG("Error: cant write write graph to file %s", filename);
         return;
@@ -132,24 +177,24 @@ const char *tree_get_str_error(BinTreeError error)
     return STR_BIN_TREE_ERRORS[error];
 }
 
-static void insert_node_in_sorted_order(BinTree *tree, Node *new_node)
+const char *tree_get_str_child_type(ChildType child_type)
 {
-    assert(tree);
-    assert(new_node);
+    return STR_BIN_TREE_CHILD_TYPES[child_type];
+}
 
-    Node **curr_node = &tree->root;
+static BinTreeError insert_node_to_pointer(Node **node_ptr, tree_el_t value)
+{
+    assert(node_ptr);
+    assert(!*node_ptr);
 
-    while (*curr_node)
+    Node *new_node = (Node *)calloc(1, sizeof(Node));
+    if (!new_node)
     {
-        if ((*curr_node)->data > new_node->data)
-        {
-            curr_node = &(*curr_node)->left;
-        }
-        else
-        {
-            curr_node = &(*curr_node)->right;
-        }
+        FLOG("Error while allocating memory for node with value " TREE_EL_SPECIFICATOR, value);
+        return TREE_MEMORY_ERROR;
     }
+    new_node->data = value;
 
-    *curr_node = new_node;
+    *node_ptr = new_node;
+    return TREE_OK;
 }
