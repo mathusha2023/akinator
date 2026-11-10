@@ -20,6 +20,7 @@ int main(void)
         return 1;
     }
 
+    printf("Enter %zu numbers to sort: ", n);
     for (size_t i = 0; i < n; i++)
     {
         res = scanf(TREE_EL_SPECIFICATOR, &x);
@@ -36,6 +37,7 @@ int main(void)
         }
     }
 
+    printf("\n");
     tree_print(&tree);
 
     tree_destroy(&tree);

@@ -80,7 +80,7 @@ void tree_dump(BinTree *tree)
 {
     assert(tree);
 
-    FLOG("<h1>TREE [%p] DUMP:</h1>", tree);
+    FLOG("<h2>TREE [%p] DUMP:</h2>", tree);
     FLOG("tree->n_nodes = %zu", tree->n_nodes);
     FLOG("tree->root = %p", tree->root);
 
