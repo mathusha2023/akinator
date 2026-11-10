@@ -96,11 +96,7 @@ void tree_print(BinTree *tree)
     assert(tree);
 
     TreeIOError error = write_tree_in_file(tree, stdout, INORDER);
-    if (error == TREE_IO_EMPTY_TREE)
-    {
-        printf("Tree dump: tree is empty");
-    }
-    else if (error != TREE_IO_OK)
+    if (error != TREE_IO_OK)
     {
         LOG("ERROR: cant print tree: %s", tree_io_get_str_error(error));
     }

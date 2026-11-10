@@ -28,4 +28,6 @@ const char PROGRAM_NAME[] = "akinator";
 const size_t MAX_FILENAME_LENGTH = 100;
 const size_t MAX_SYS_COMMAND_LENGTH = 200;
 
+const size_t MAX_NODE_DATA_LENGTH = 100;
+
 #endif // CONFIG_H

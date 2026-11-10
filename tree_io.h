@@ -1,8 +1,9 @@
 #ifndef TREE_IO_H
 #define TREE_IO_H
 
-#include "bin_tree.h"
 #include <stdio.h>
+#include "bin_tree.h"
+#include "my_string.h"
 
 typedef enum TreeOrders
 {
@@ -15,18 +16,23 @@ typedef enum TreeIOError
 {
     TREE_IO_OK,
     TREE_IO_FILE_ERROR,
-    TREE_IO_EMPTY_TREE,
+    TREE_IO_INCORRECT_STRING_FORMAT,
+    TREE_IO_MEMORY_ERROR,
 } TreeIOError;
 
 static const char *STR_TREE_IO_ERRORS[] = {
     "TREE_IO_OK",
     "TREE_IO_FILE_ERROR",
-    "TREE_IO_EMPTY_TREE",
+    "TREE_IO_INCORRECT_STRING_FORMAT",
+    "TREE_IO_MEMORY_ERROR",
 };
 
 TreeIOError write_tree_in_file_by_filename(BinTree *tree, const char *filename, TreeOrders order);
 TreeIOError write_tree_in_file(BinTree *tree, FILE *file, TreeOrders order);
 TreeIOError write_node_in_file(Node *node, FILE *file, TreeOrders order);
+
+TreeIOError parse_tree_from_file_by_filename(BinTree *tree, const char *filename);
+TreeIOError parse_tree_from_string(BinTree *tree, String string);
 
 const char *tree_io_get_str_error(TreeIOError error);
 

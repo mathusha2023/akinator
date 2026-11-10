@@ -5,3 +5,4 @@ log
 *.dSYM
 akinator
 input.txt
+data.txt
