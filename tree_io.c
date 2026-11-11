@@ -1,5 +1,6 @@
 #include "tree_io.h"
 #include <stdio.h>
+#include <string.h>
 #include "bin_tree.h"
 #include "log.h"
 #include "my_string.h"
@@ -296,32 +297,34 @@ static TreeIOError parse_node_data_from_string(String string, char **node_data_p
     assert(node_data_ptr);
     assert(end_index);
 
-    char *node_data = (char *)calloc(MAX_NODE_DATA_LENGTH + 1, sizeof(char));
+    char buff[MAX_NODE_DATA_LENGTH + 1] = {};
+
+    size_t i = 1;
+    for (i = 1; i < string.length && i < MAX_NODE_DATA_LENGTH && string.p[i] != '"'; i++)
+    {
+        buff[i - 1] = string.p[i];
+    }
+    buff[i] = '\0';
+
+    // вторая кавычка не нашлась
+    if (i == string.length)
+    {
+        return log_and_return_incorrect_input_format_error(string, "there are no the second quote");
+    }
+    // слишком длинная строка данных
+    else if (i == MAX_NODE_DATA_LENGTH)
+    {
+        return log_and_return_incorrect_input_format_error(string, "node data length is very long");
+    }
+
+    char *node_data = (char *)calloc(i + 1, sizeof(char));
     if (!node_data)
     {
         FLOG("Error: can not allocate memory for node data string");
         return TREE_IO_MEMORY_ERROR;
     }
 
-    size_t i = 1;
-    for (i = 1; i < string.length && i < MAX_NODE_DATA_LENGTH && string.p[i] != '"'; i++)
-    {
-        node_data[i - 1] = string.p[i];
-    }
-    node_data[i] = '\0';
-
-    // вторая кавычка не нашлась
-    if (i == string.length)
-    {
-        free_ptr(node_data);
-        return log_and_return_incorrect_input_format_error(string, "there are no the second quote");
-    }
-    // слишком длинная строка данных
-    else if (i == MAX_NODE_DATA_LENGTH)
-    {
-        free_ptr(node_data);
-        return log_and_return_incorrect_input_format_error(string, "node data length is very long");
-    }
+    strncpy(node_data, buff, i + 1);
 
     *node_data_ptr = node_data;
     *end_index = i;

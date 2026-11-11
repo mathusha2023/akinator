@@ -25,6 +25,9 @@ const char LOG_DIRECTORY[] = "log";
 const char GRAPH_DIRECTORY[] = "log";
 const char PROGRAM_NAME[] = "akinator";
 
+const char DATA_FILE_NAME[] = "data.ak";
+const char PRETTY_GRAPH_FILE_NAME[] = "seregasinshluhi.png";
+
 const size_t MAX_FILENAME_LENGTH = 100;
 const size_t MAX_SYS_COMMAND_LENGTH = 200;
 

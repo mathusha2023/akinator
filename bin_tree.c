@@ -114,6 +114,7 @@ void node_destroy(Node **node)
     if ((*node)->right)
         node_destroy(&(*node)->right);
 
+    free_ptr((*node)->data);
     free_ptr(*node);
 }
 
