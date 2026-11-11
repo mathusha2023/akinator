@@ -20,7 +20,8 @@ void main_loop(BinTree *tree)
 {
     assert(tree);
 
-    printf("Добро пожаловать в акинатора by BAA! ");
+    say(GREETING_PH);
+    printf(GREETING_PH);
 
     int cmd = 0;
 
@@ -65,6 +66,7 @@ void ugadaika(BinTree *tree)
 
     while (1)
     {
+        say(curr_node->data);
         printf("%s? [1]ДА / [2]НЕТ\n", curr_node->data);
         printf("> ");
 
@@ -92,16 +94,21 @@ void ugadaika(BinTree *tree)
             }
         }
         else
-            printf("Выберите корректный вариант ответа!\n");
+        {
+            say(CHOOSE_CORRECT_VARIANT_PH);
+            printf(CHOOSE_CORRECT_VARIANT_PH);
+        }
     }
 
     if (right_answer)
     {
-        printf("Ха-ха-ха и снова я угадал!\n\n\n");
+        say(I_WIN_PH);
+        printf(I_WIN_PH);
         return;
     }
 
-    printf("Удивительно, нашлось что-то, чего я не знаю... ");
+    say(START_ADDING_PH);
+    printf(START_ADDING_PH);
     add_new_answer(tree, curr_node);
 
     printf("\n\n\n");
@@ -133,7 +140,8 @@ void smotrelka(BinTree *tree)
 {
     assert(tree);
 
-    printf("Про какой обьект вы хотите посмотреть информацию? Введите его название\n");
+    say(START_WATCHING_PH);
+    printf(START_WATCHING_PH);
     printf("> ");
 
     char *name = read_str();
@@ -181,7 +189,8 @@ void sohranyalka(BinTree *tree)
 
     char c = 0;
 
-    printf("Нажмите [1], чтобы сохранить новое дерево акинатора перед выходом, или любую другую клавишу для выхода\n");
+    say(SAVE_PH);
+    printf(SAVE_PH);
     printf("> ");
 
     c = (char)getchar();
@@ -203,9 +212,36 @@ void sohranyalka(BinTree *tree)
     }
 }
 
+void say(const char *s)
+{
+    assert(s);
+
+    const char *command_start = "flock -x /tmp/my_task.lock -c 'say -v Milena -r 190 \"";
+    const char *command_end = "\"' &";
+    char *p = (char *)calloc(strlen(command_start) + strlen(s) + strlen(command_end) + 1, sizeof(char));
+    if (!p)
+    {
+        FLOG("Error while allocating memory for say");
+        return;
+    }
+
+    int i = 0, j = 0;
+
+    for (i = 0; command_start[i]; i++)
+        p[i] = command_start[i];
+    for (j = 0; s[j]; i++, j++)
+        p[i] = s[j];
+    for (j = 0; command_end[j]; i++, j++)
+        p[i] = command_end[j];
+    p[i] = '\0';
+    system(p);
+    free(p);
+}
+
 static void print_menu(void)
 {
-    printf("Выберите один из вариантов ниже:\n");
+    say(CHOOSE_ONE_VARIANT);
+    printf(CHOOSE_ONE_VARIANT);
     printf("[1]. Угадать кого-то (что-то) или добавить новый обьект\n");
     printf("[2]. Посмотреть базу ответов\n");
     printf("[3]. Посмотреть информацию об обьекте\n");
