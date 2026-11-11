@@ -7,12 +7,14 @@
 #include "config.h"
 #include "log.h"
 #include "graphviz.h"
+#include "stack.h"
 
 static void print_menu(void);
 static int get_command(void);
 static void flush_console(void);
 static void add_new_answer(BinTree *tree, Node *curr_node);
 static char *read_str(void);
+static int make_description_stack(char *data, Node *node, Stack *data_stack, Stack *direct_stack);
 
 void main_loop(BinTree *tree)
 {
@@ -40,7 +42,7 @@ void main_loop(BinTree *tree)
             glyadelka(tree);
             break;
         case 3:
-            printf("SMOTRELKA OBJ\n");
+            smotrelka(tree);
             break;
         case 4:
             printf("SRAVNILKA\n");
@@ -123,6 +125,54 @@ void glyadelka(BinTree *tree)
         return;
 
     system(cmd);
+
+    printf("\n\n\n");
+}
+
+void smotrelka(BinTree *tree)
+{
+    assert(tree);
+
+    printf("Про какой обьект вы хотите посмотреть информацию? Введите его название\n");
+    printf("> ");
+
+    char *name = read_str();
+    if (!name)
+    {
+        printf("УПС не смог получить информацию, сорри(");
+        return;
+    }
+
+    Stack data_stack = {}, direction_stack = {};
+    init_stack(&data_stack, 100);
+    init_stack(&direction_stack, 100);
+
+    int res = make_description_stack(name, tree->root, &data_stack, &direction_stack);
+    if (!res)
+    {
+        printf("Обьекта с именем %s не найдено в нашем дереве! Попробуйте изучить что-нибудь существующее, а лучше конечно матан\n", name);
+    }
+    else
+    {
+        printf("Вот описание %s: ", name);
+
+        char *desc_data = NULL;
+        char *desc_direction = NULL;
+        size_t size1 = get_size(&data_stack), size2 = get_size(&direction_stack);
+        for (size_t i = 0; i < size1 && i < size2; i++)
+        {
+            desc_data = data_stack.data[i];
+            desc_direction = direction_stack.data[i];
+            printf("%s %s -> ", desc_direction, desc_data);
+        }
+        printf("%s", name);
+    }
+
+    free_ptr(name);
+    destroy_stack(&data_stack);
+    destroy_stack(&direction_stack);
+
+    printf("\n\n\n");
 }
 
 void sohranyalka(BinTree *tree)
@@ -255,4 +305,38 @@ static char *read_str(void)
     strncpy(str, buff, i);
 
     return str;
+}
+
+// 0 - не наход на данной ветке, 1 - нашли значение
+static int make_description_stack(char *data, Node *node, Stack *data_stack, Stack *direct_stack)
+{
+    assert(data);
+    assert(data_stack);
+    assert(direct_stack);
+
+    if (!node)
+        return 0;
+
+    char *buf = NULL;
+
+    if (!strcmp(node->data, data))
+        return 1;
+
+    push_stack(data_stack, node->data);
+
+    push_stack(direct_stack, "");
+    int res = make_description_stack(data, node->left, data_stack, direct_stack);
+    if (res)
+        return 1;
+    pop_stack(direct_stack, &buf);
+
+    push_stack(direct_stack, "не");
+    res = make_description_stack(data, node->right, data_stack, direct_stack);
+    if (res)
+        return 1;
+    pop_stack(direct_stack, &buf);
+
+    pop_stack(data_stack, &buf);
+
+    return 0;
 }

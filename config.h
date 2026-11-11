@@ -33,4 +33,6 @@ const size_t MAX_SYS_COMMAND_LENGTH = 200;
 
 const size_t MAX_NODE_DATA_LENGTH = 100;
 
+const double EPSILON = 1e-6;
+
 #endif // CONFIG_H
