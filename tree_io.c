@@ -317,14 +317,12 @@ static TreeIOError parse_node_data_from_string(String string, char **node_data_p
         return log_and_return_incorrect_input_format_error(string, "node data length is very long");
     }
 
-    char *node_data = (char *)calloc(i + 1, sizeof(char));
+    char *node_data = strdup(buff);
     if (!node_data)
     {
         FLOG("Error: can not allocate memory for node data string");
         return TREE_IO_MEMORY_ERROR;
     }
-
-    strncpy(node_data, buff, i + 1);
 
     *node_data_ptr = node_data;
     *end_index = i;
