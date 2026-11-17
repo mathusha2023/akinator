@@ -33,33 +33,3 @@ char *stringchr(String string, char c)
     }
     return NULL;
 }
-
-// отдает минимальную длину первой встретившейся скобочной последовательности в строке
-// если строка не начинается с '(' или не имеет правильной скобочной последовательности
-// то вернет 0
-size_t get_min_bracket_sequence_length(String string)
-{
-    assert(string.p);
-    assert(string.length);
-
-    if (string.p[0] != '(')
-        return 0;
-
-    int sum = 0;
-    size_t i = 0;
-
-    for (i = 0; i < string.length; i++)
-    {
-        if (string.p[i] == '(')
-            sum++;
-        else if (string.p[i] == ')')
-            sum--;
-
-        if (sum == 0)
-            return i + 1;
-        else if (sum < 0)
-            return 0;
-    }
-
-    return sum == 0;
-}

@@ -9,6 +9,7 @@
 static TreeIOError parse_node_from_string(String string, Node **node_ptr, size_t *nodes_append);
 static TreeIOError parse_node_data_from_string(String string, char **node_data_ptr, size_t *end_index);
 static TreeIOError log_and_return_incorrect_input_format_error(String string, const char *special_info);
+static size_t get_min_bracket_sequence_length(String string);
 
 TreeIOError write_tree_in_file_by_filename(BinTree *tree, const char *filename, TreeOrders order)
 {
@@ -54,7 +55,7 @@ TreeIOError write_node_in_file(Node *node, FILE *file, TreeOrders order)
     {
         if (fprintf(file, "nil") < 0)
         {
-            FLOG("ERROR: cant write 'nil' in file <%p>", file);
+            FLOG("ERROR: cant write 'nil' in file '%p'", file);
             return TREE_IO_FILE_ERROR;
         }
         return error;
@@ -62,7 +63,7 @@ TreeIOError write_node_in_file(Node *node, FILE *file, TreeOrders order)
 
     if (fprintf(file, "(") < 0)
     {
-        FLOG("ERROR: cant write '(' in file <%p>", file);
+        FLOG("ERROR: cant write '(' in file '%p'", file);
         return TREE_IO_FILE_ERROR;
     }
 
@@ -70,7 +71,7 @@ TreeIOError write_node_in_file(Node *node, FILE *file, TreeOrders order)
     {
         if (fprintf(file, "\"" TREE_EL_SPECIFICATOR "\" ", node->data) < 0)
         {
-            FLOG("ERROR: cant write '" TREE_EL_SPECIFICATOR "' in file <%p>", node->data, file);
+            FLOG("ERROR: cant write '" TREE_EL_SPECIFICATOR "' in file '%p'", node->data, file);
             return TREE_IO_FILE_ERROR;
         }
     }
@@ -86,7 +87,7 @@ TreeIOError write_node_in_file(Node *node, FILE *file, TreeOrders order)
     // пробел - разделитель
     if (fprintf(file, " ") < 0)
     {
-        FLOG("ERROR: cant write ' ' in file <%p>", file);
+        FLOG("ERROR: cant write ' ' in file '%p'", file);
         return TREE_IO_FILE_ERROR;
     }
 
@@ -94,7 +95,7 @@ TreeIOError write_node_in_file(Node *node, FILE *file, TreeOrders order)
     {
         if (fprintf(file, "\"" TREE_EL_SPECIFICATOR "\" ", node->data) < 0)
         {
-            FLOG("ERROR: cant write '" TREE_EL_SPECIFICATOR "' in file <%p>", node->data, file);
+            FLOG("ERROR: cant write '" TREE_EL_SPECIFICATOR "' in file '%p'", node->data, file);
             return TREE_IO_FILE_ERROR;
         }
     }
@@ -111,14 +112,14 @@ TreeIOError write_node_in_file(Node *node, FILE *file, TreeOrders order)
     {
         if (fprintf(file, " \"" TREE_EL_SPECIFICATOR "\"", node->data) < 0)
         {
-            FLOG("ERROR: cant write '" TREE_EL_SPECIFICATOR "' in file <%p>", node->data, file);
+            FLOG("ERROR: cant write '" TREE_EL_SPECIFICATOR "' in file '%p'", node->data, file);
             return TREE_IO_FILE_ERROR;
         }
     }
 
     if (fprintf(file, ")") < 0)
     {
-        FLOG("ERROR: cant write ')' in file <%p>", file);
+        FLOG("ERROR: cant write ')' in file '%p'", file);
         return TREE_IO_FILE_ERROR;
     }
 
@@ -166,7 +167,7 @@ TreeIOError parse_tree_from_string(BinTree *tree, String string)
         char *s = copy_string_to_char_arr(string);
         if (s)
         {
-            FLOG("ERROR while parsing tree from string <%s>: %s", s, tree_io_get_str_error(error));
+            FLOG("ERROR while parsing tree from string '%s': %s", s, tree_io_get_str_error(error));
             free_ptr(s);
         }
         else
@@ -230,7 +231,7 @@ static TreeIOError parse_node_from_string(String string, Node **node_ptr, size_t
     {
         free_ptr(node_data);
         free_ptr(new_node);
-        return log_and_return_incorrect_input_format_error(string, NULL);
+        return log_and_return_incorrect_input_format_error(string, "There is should be whitespace!");
     }
     i++;
 
@@ -248,7 +249,7 @@ static TreeIOError parse_node_from_string(String string, Node **node_ptr, size_t
         {
             free_ptr(node_data);
             free_ptr(new_node);
-            return log_and_return_incorrect_input_format_error(string, NULL);
+            return log_and_return_incorrect_input_format_error(string, "There is incorrect brackets sequence!");
         }
 
         error = parse_node_from_string((String){.p = string.p + i, .length = bracket_seq_length}, &new_node->left, nodes_append);
@@ -267,7 +268,7 @@ static TreeIOError parse_node_from_string(String string, Node **node_ptr, size_t
     {
         free_ptr(node_data);
         free_ptr(new_node);
-        return log_and_return_incorrect_input_format_error(string, NULL);
+        return log_and_return_incorrect_input_format_error(string, "There is should be whitespce");
     }
     i++;
 
@@ -341,7 +342,7 @@ static TreeIOError log_and_return_incorrect_input_format_error(String string, co
     {
         if (s)
         {
-            FLOG("%s (%s): <%s>", mes, s, special_info);
+            FLOG("%s (%s): %s", mes, s, special_info);
             free_ptr(s);
         }
         else
@@ -353,7 +354,7 @@ static TreeIOError log_and_return_incorrect_input_format_error(String string, co
     {
         if (s)
         {
-            FLOG("%s: <%s>", mes, s);
+            FLOG("%s: %s", mes, s);
             free_ptr(s);
         }
         else
@@ -362,4 +363,40 @@ static TreeIOError log_and_return_incorrect_input_format_error(String string, co
         }
     }
     return TREE_IO_INCORRECT_STRING_FORMAT;
+}
+
+// отдает минимальную длину первой встретившейся скобочной последовательности в строке
+// причем если скобка находится внутри кавычек то она не считается
+// если строка не начинается с '(' или не имеет правильной скобочной последовательности
+// то вернет 0
+// если в строке есть незакрытые кавычки то тоже вернет 0
+static size_t get_min_bracket_sequence_length(String string)
+{
+    assert(string.p);
+    assert(string.length);
+
+    int in_quotes = 0;
+
+    if (string.p[0] != '(')
+        return 0;
+
+    int sum = 0;
+    size_t i = 0;
+
+    for (i = 0; i < string.length; i++)
+    {
+        if (string.p[i] == '"')
+            in_quotes = 1 - in_quotes; // 0 -> 1 && 1 -> 0
+        if (string.p[i] == '(' && !in_quotes)
+            sum++;
+        else if (string.p[i] == ')' && !in_quotes)
+            sum--;
+
+        if (sum == 0)
+            return i + 1;
+        else if (sum < 0)
+            return 0;
+    }
+
+    return (sum == 0 && in_quotes == 0) ? string.length : 0;
 }
